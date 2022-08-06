@@ -18,9 +18,15 @@ Give the session web page URL as an argument.
 - ✅ WWDC16
 - ✅ WWDC15
 
+## Requires
+
+- [`ffmpeg`](https://www.ffmpeg.org) and [`ffprobe`](https://www.ffmpeg.org)
+- [`MP4Box`](https://github.com/gpac/gpac/wiki/MP4Box)
+- [`jq`](https://stedolan.github.io/jq/)
+
+
 ## Notes
 
-- Requires `ffmpeg`, `ffprobe` and `jq`.
 - Get the highest quality of HEVC or AVC video stream.
 - Get US English and Japanese subtitles.
 (To support other languages, you will need to modify the script.)
