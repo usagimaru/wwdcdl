@@ -343,6 +343,6 @@ curl -so $main_hls_path $hls_url
 getURIs
 dlprocess
 joinFiles
-postprocess
+# postprocess
 
 open "$session_name"
