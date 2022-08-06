@@ -10,16 +10,19 @@ Give the session web page URL as an argument.
 ## Compatibility
 
 - ✅ WWDC22
-- ❌ WWDC21
-- ❌ WWDC20
-- ❌ Other years
+- ✅ WWDC21
+- ✅ WWDC20
+- ✅ WWDC19
+- ✅ WWDC18
+- ✅ WWDC17
+- ✅ WWDC16
+- ✅ WWDC15
 
 ## Notes
 
-- Requires ffmpeg.
-- Get the highest quality HEVC video.
-- Subtitles are available in US English and Japanese.
-- Get subtitles in US English and Japanese.
+- Requires `ffmpeg`, `ffprobe` and `jq`.
+- Get the highest quality of HEVC or AVC video stream.
+- Get US English and Japanese subtitles.
 (To support other languages, you will need to modify the script.)
-- Create a working directory on your desktop.
+- Create a working directory on your current directory.
 - For personal use.
