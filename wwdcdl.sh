@@ -336,7 +336,7 @@ function joinFiles () {
 function postprocess () {
 	rm -f $main_hls_path
 	rm -f $remux_hevc_path
-	rm -f "${video_outpath}_track1.hvc"
+	rm -f "${video_outpath%.*}_track1.hvc"
 	rm -f $audio_outpath
 	rm -f $video_outpath
 	rm -f $hvc_path
