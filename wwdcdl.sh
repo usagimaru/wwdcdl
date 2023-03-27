@@ -14,6 +14,7 @@ video_avc_uri=""
 audio_uri=""
 stt_uri_en=""
 stt_uri_ja=""
+slide_uri=""
 
 # ---------------------------------------
 
@@ -114,7 +115,7 @@ function getURIs () {
 	if [ ! $stt_uri_ja ]; then
 		stt_uri_ja=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=SUBTITLES" | grep -i "name=\"日本語\"" | grep -iv "subsC" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
 	fi
-		
+	
 	if [ -n "$video_hvc_uri" ]; then
 		echo HVC Video URI: \"$video_hvc_uri\"
 	else
@@ -155,6 +156,11 @@ function getURIs () {
 
 # Download processes
 function dlprocess () {
+	# Slide URI
+	local slide_url=`curl -fsSL $input_url | grep -i ".*\.pdf" | sed -E "s/.*href=\"([^\"]*).*/\1/"`
+	curl -O $slide_url
+	
+	
 	local video_url=$hls_base_url/$video_avc_uri
 	if [ -n "$video_hvc_uri" ]; then
 		video_url=$hls_base_url/$video_hvc_uri
@@ -334,12 +340,12 @@ function joinFiles () {
 
 # Delete intermediate files
 function postprocess () {
-	trash $main_hls_path
-	trash $remux_hevc_path
-	trash "${video_outpath%.*}_track1.hvc"
-	trash $audio_outpath
-	trash $video_outpath
-	trash $hvc_path
+	trash $main_hls_path > /dev/null 2>&1
+	trash $remux_hevc_path > /dev/null 2>&1
+	trash "${video_outpath%.*}_track1.hvc" > /dev/null 2>&1
+	trash $audio_outpath > /dev/null 2>&1
+	trash $video_outpath > /dev/null 2>&1
+	trash $hvc_path > /dev/null 2>&1
 	
 	## Keep subtitles or not
 	#rm -f $stt_path_en
