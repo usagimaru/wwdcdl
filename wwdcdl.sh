@@ -334,12 +334,12 @@ function joinFiles () {
 
 # Delete intermediate files
 function postprocess () {
-	rm -f $main_hls_path
-	rm -f $remux_hevc_path
-	rm -f "${video_outpath%.*}_track1.hvc"
-	rm -f $audio_outpath
-	rm -f $video_outpath
-	rm -f $hvc_path
+	trash $main_hls_path
+	trash $remux_hevc_path
+	trash "${video_outpath%.*}_track1.hvc"
+	trash $audio_outpath
+	trash $video_outpath
+	trash $hvc_path
 	
 	## Keep subtitles or not
 	#rm -f $stt_path_en
