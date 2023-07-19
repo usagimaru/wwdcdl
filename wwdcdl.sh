@@ -6,6 +6,8 @@ video_outpath="tmp_video.mp4"
 remux_hevc_path="tmp_remux_hevc.mp4"
 final_video_path=$video_outpath
 audio_outpath="tmp_audio.m4a"
+
+# Subtitles
 stt_path_en="tmp_stt_en.vtt"
 stt_path_ja="tmp_stt_ja.vtt"
 
@@ -96,7 +98,9 @@ function getURIs () {
 	fi
 	
 	# Audio URI
-	audio_uri=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=AUDIO" | grep "NAME=\"English\"" | sort -fVr | grep -m 1 ".*" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
+	# The number of channels is fixed to stereo to exclude Dolby-Atmos. (grep "CHANNELS=\"2\"")
+	# Currently Dolby-Atmos audio is not supported in this script because I have not found a way to properly muxing them to QuickTime compatible mp4 format.
+	audio_uri=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=AUDIO" | grep "NAME=\"English\"" | grep "CHANNELS=\"2\"" | sort -fVr | grep -m 1 ".*" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
 	
 	if [ ! $audio_uri ]; then
 		audio_uri=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=AUDIO" | sort -fV | grep -m 1 ".*" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
@@ -161,25 +165,46 @@ function dlprocess () {
 	curl -O $slide_url
 	
 	
+	# Prepare URLs
+	
 	local video_url=$hls_base_url/$video_avc_uri
 	if [ -n "$video_hvc_uri" ]; then
-		video_url=$hls_base_url/$video_hvc_uri
+		if [[ "$audio_uri" =~ ^https:\/\/.* ]]; then
+			# URIがフルURLの場合はそのまま利用
+			video_url=$video_hvc_uri
+		else
+			# URIがパスの場合はベースURLと結合
+			video_url=$hls_base_url/$video_hvc_uri
+		fi
 	fi
 	
 	local audio_url=""
 	if [ -n "$audio_uri" ]; then
-		audio_url=$hls_base_url/$audio_uri
+		if [[ "$audio_uri" =~ ^https:\/\/.* ]]; then
+			audio_url=$audio_uri
+		else
+			audio_url=$hls_base_url/$audio_uri
+		fi
 	fi
 	
 	local stt_url_en=""
 	if [ -n "$stt_uri_en" ]; then
-		stt_url_en=$hls_base_url/$stt_uri_en
+		if [[ "$stt_uri_en" =~ ^https:\/\/.* ]]; then
+			stt_url_en=$stt_uri_en
+		else
+			stt_url_en=$hls_base_url/$stt_uri_en
+		fi
 	fi
 	
 	local stt_url_ja=""
 	if [ -n "$stt_uri_ja" ]; then
-		stt_url_ja=$hls_base_url/$stt_uri_ja
+		if [[ "$stt_uri_ja" =~ ^https:\/\/.* ]]; then
+			stt_url_ja=$stt_uri_ja
+		else
+			stt_url_ja=$hls_base_url/$stt_uri_ja
+		fi
 	fi
+	
 	
 	# Subtitle en
 	if [[ `exists_url $stt_url_en` == "exists" ]] && [ ! -e "$stt_path_en" ]; then
