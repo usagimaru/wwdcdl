@@ -9,6 +9,7 @@ Give the session web page URL as an argument.
 
 ## Compatibility
 
+- ✅ WWDC23
 - ✅ WWDC22
 - ✅ WWDC21
 - ✅ WWDC20
@@ -17,6 +18,8 @@ Give the session web page URL as an argument.
 - ✅ WWDC17
 - ✅ WWDC16
 - ✅ WWDC15
+
+Currently Dolby-Atmos audio is not supported because I have not found a way to properly mux them to QuickTime compatible mp4 format.
 
 ## Requires
 
