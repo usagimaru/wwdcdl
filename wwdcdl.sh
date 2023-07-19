@@ -99,7 +99,7 @@ function getURIs () {
 	
 	# Audio URI
 	# The number of channels is fixed to stereo to exclude Dolby-Atmos. (grep "CHANNELS=\"2\"")
-	# Currently Dolby-Atmos audio is not supported in this script because I have not found a way to properly muxing them to QuickTime compatible mp4 format.
+	# Currently Dolby-Atmos audio is not supported in this script because I have not found a way to properly mux them to QuickTime compatible mp4 format.
 	audio_uri=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=AUDIO" | grep "NAME=\"English\"" | grep "CHANNELS=\"2\"" | sort -fVr | grep -m 1 ".*" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
 	
 	if [ ! $audio_uri ]; then

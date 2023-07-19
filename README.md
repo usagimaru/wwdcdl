@@ -9,6 +9,7 @@ Give the session web page URL as an argument.
 
 ## Compatibility
 
+- ✅ WWDC23
 - ✅ WWDC22
 - ✅ WWDC21
 - ✅ WWDC20
@@ -33,4 +34,5 @@ Give the session web page URL as an argument.
 - Get US English and Japanese subtitles.
 (To support other languages, you will need to modify the script.)
 - Create a working directory on your current directory.
+- Currently Dolby-Atmos audio is not supported because I have not found a way to properly mux them to QuickTime compatible mp4 format.
 - For personal use.
