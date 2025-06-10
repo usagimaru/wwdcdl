@@ -1,15 +1,15 @@
 #!/bin/sh
 
 # Intermediate output files
-main_hls_path="cmaf.m3u8"
+main_hls_path="tmp_main.m3u8"
 video_outpath="tmp_video.mp4"
 remux_hevc_path="tmp_remux_hevc.mp4"
 final_video_path=$video_outpath
 audio_outpath="tmp_audio.m4a"
 
 # Subtitles
-stt_outpath_en="tmp_stt_en.vtt"
-stt_outpath_ja="tmp_stt_ja.vtt"
+stt_path_en="tmp_stt_en.vtt"
+stt_path_ja="tmp_stt_ja.vtt"
 
 video_hvc_uri=""
 video_avc_uri=""
@@ -84,25 +84,37 @@ function getURIs () {
 
 
 	# HEVC URI
-	video_hvc_uri=`cat $main_hls_path | grep ".m3u8" | grep "^cmaf/hvc" | sort -fVr | grep -m 1 ".*"`
+	video_hvc_uri=`cat $main_hls_path | grep ".m3u8" | grep "hvc" | grep -iv "i-frame" | sort -fVr | grep -m 1 ".*"`
+	
+	if [ ! $video_hvc_uri ]; then
+		video_hvc_uri=`cat $main_hls_path | grep -A 1 -i "codecs=\"hvc" | grep ".m3u8" | grep -iv "i-frame" | sort -fVr | grep -m 1 ".*"`
+	fi
 	
 	# AVC URI
-	video_avc_uri=`cat $main_hls_path | grep ".m3u8" | grep "^cmaf/avc" | sort -fVr | grep -m 1 ".*"`
+	video_avc_uri=`cat $main_hls_path | grep ".m3u8" | grep "avc" | grep -iv "i-frame" | sort -fVr | grep -m 1 ".*"`
+	
+	if [ ! $video_avc_uri ]; then
+		video_avc_uri=`cat $main_hls_path | grep -A 1 -i "codecs=\"avc" | grep ".m3u8" | grep -iv "i-frame" | sort -fVr | grep -m 1 ".*"`
+	fi
 	
 	# Audio URI
 	# The number of channels is fixed to stereo to exclude Dolby-Atmos. (grep "CHANNELS=\"2\"")
 	# Currently Dolby-Atmos audio is not supported in this script because I have not found a way to properly mux them to QuickTime compatible mp4 format.
 	audio_uri=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=AUDIO" | grep "NAME=\"English\"" | grep "CHANNELS=\"2\"" | sort -fVr | grep -m 1 ".*" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
 	
+	if [ ! $audio_uri ]; then
+		audio_uri=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=AUDIO" | sort -fV | grep -m 1 ".*" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
+	fi
+	
 	# Subtitle URI en
-	stt_uri_en=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=SUBTITLES" | grep -i "LANGUAGE=\"en\"" | grep -iv "subsC" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
+	stt_uri_en=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=SUBTITLES" | grep -i "LANGUAGE=\"eng\"" | grep -iv "subsC" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
 	
 	if [ ! $stt_uri_en ]; then
 		stt_uri_en=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=SUBTITLES" | grep -i "name=\"English\"" | grep -iv "subsC" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
 	fi
 	
 	# Subtitle URI ja
-	stt_uri_ja=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=SUBTITLES" | grep -i "LANGUAGE=\"ja\"" | grep -iv "subsC" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
+	stt_uri_ja=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=SUBTITLES" | grep -i "LANGUAGE=\"jpn\"" | grep -iv "subsC" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
 	
 	if [ ! $stt_uri_ja ]; then
 		stt_uri_ja=`cat $main_hls_path | grep ".m3u8" | grep "EXT-X-MEDIA:TYPE=SUBTITLES" | grep -i "name=\"日本語\"" | grep -iv "subsC" | sed -E "s/.*URI=\"(.*\.m3u8)\".*/\1/"`
@@ -195,8 +207,8 @@ function dlprocess () {
 	
 	
 	# Subtitle en
-	if [[ `exists_url $stt_url_en` == "exists" ]] && [ ! -e "$stt_outpath_en" ]; then
-		ffmpeg -allowed_extensions ALL -i $stt_url_en $stt_outpath_en
+	if [[ `exists_url $stt_url_en` == "exists" ]] && [ ! -e "$stt_path_en" ]; then
+		ffmpeg -i $stt_url_en $stt_path_en
 	else 
 		echo $stt_url_en
 		echo `exists_url $stt_url_en`
@@ -204,23 +216,22 @@ function dlprocess () {
 	fi
 	
 	# Subtitle ja
-	if [[ `exists_url $stt_url_ja` == "exists" ]] && [ ! -e "$stt_outpath_ja" ]; then
-		ffmpeg -allowed_extensions ALL -i $stt_url_ja $stt_outpath_ja
+	if [[ `exists_url $stt_url_ja` == "exists" ]] && [ ! -e "$stt_path_ja" ]; then
+		ffmpeg -i $stt_url_ja $stt_path_ja
 	else 
 		echo "pass the stt ja downloading"
 	fi
 	
 	# Audio (en)
 	if [[ `exists_url $audio_url` == "exists" ]] && [ ! -e "$audio_outpath" ]; then
-		ffmpeg -allowed_extensions ALL -i $audio_url -c copy $audio_outpath
+		ffmpeg -i $audio_url -c copy $audio_outpath
 	else 
 		echo "pass the audio downloading"
 	fi
 		
 	# Video
-	echo "Video URL: $video_url"
 	if [[ `exists_url $video_url` == "exists" ]] && [ ! -e "$video_outpath" ]; then
-		local cmd="ffmpeg -allowed_extensions ALL -i $video_url -c copy $video_outpath"
+		local cmd="ffmpeg -i $video_url -c copy $video_outpath"
 		#echo $cmd
 		eval $cmd
 	else
@@ -263,13 +274,13 @@ function joinFiles () {
 		isAudio=1
 	fi
 	
-	if [ -e "$stt_outpath_en" ]; then
-		cmdchain+="-i $stt_outpath_en "
+	if [ -e "$stt_path_en" ]; then
+		cmdchain+="-i $stt_path_en "
 		isSTT_en=1
 	fi
 	
-	if [ -e "$stt_outpath_ja" ]; then
-		cmdchain+="-i $stt_outpath_ja "
+	if [ -e "$stt_path_ja" ]; then
+		cmdchain+="-i $stt_path_ja "
 		isSTT_ja=1
 	fi
 	
@@ -343,8 +354,8 @@ function joinFiles () {
 # 	ffmpeg \
 # 	-i $remux_hevc_path \
 # 	-i $audio_outpath \
-# 	-i $stt_outpath_en \
-# 	-i $stt_outpath_ja \
+# 	-i $stt_path_en \
+# 	-i $stt_path_ja \
 # 	-map 0 -map 1 -map 2 -map 3 \
 # 	-c:v copy -c:a copy -c:s mov_text -c:s mov_text \
 # 	-metadata:s:s:0 language=eng \
@@ -362,15 +373,15 @@ function postprocess () {
 	trash $hvc_path > /dev/null 2>&1
 	
 	## Keep subtitles or not
-	#rm -f $stt_outpath_en
-	#rm -f $stt_outpath_ja
+	#rm -f $stt_path_en
+	#rm -f $stt_path_ja
 }
 
 # ---------------------------------------
 
 # Default message
 if [ $# != 1 ]; then
-	echo "wwdcdl.sh <https://developer.apple.com/videos/play/wwdc20xx/00000/>"
+	echo "wwdcdl <https://developer.apple.com/videos/play/wwdc20xx/00000/>"
 	exit 1
 fi
 
@@ -401,9 +412,6 @@ echo "========================================"
 hls_url=$(curl -fsSL $url | grep '<video.*src="https:\/\/.*.m3u8".*>' | sed 's/.*\(https:\/\/.*.m3u8\).*/\1/g')
 
 hls_base_url=${hls_url%/*}
-
-echo "HLS URL: $hls_url"
-echo "Base URL: $hls_base_url"
 
 # Get HLS m3u8
 curl -so $main_hls_path $hls_url
