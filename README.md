@@ -5,15 +5,15 @@ A downloader for WWDC session videos.
 
 Give the session web page URL as an argument.
 
-`% wwdcdl https://developer.apple.com/videos/play/wwdc2022/102/`
+`% wwdcdl.sh https://developer.apple.com/videos/play/wwdc2022/102/`
 
 ## Compatibility
 
-**wwdcdl**
+**wwdcdl.sh**
 
 - ✅ WWDC25
 
-**wwdcdl_pre25**
+**wwdcdl_pre25.sh**
 
 - ❌ WWDC25
 - ✅ WWDC24
@@ -30,7 +30,7 @@ Give the session web page URL as an argument.
 ## Requires
 
 - curl
-- [`ffmpeg@6`](https://www.ffmpeg.org) and [`ffprobe`](https://www.ffmpeg.org)
+- [`ffmpeg` (v6)](https://www.ffmpeg.org) and [`ffprobe`](https://www.ffmpeg.org)
 	- Caught some errors with ffmpeg v7
 - [`MP4Box`](https://github.com/gpac/gpac/wiki/MP4Box)
 - [`jq`](https://stedolan.github.io/jq/)
